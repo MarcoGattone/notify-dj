@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Richiesta Musicale</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+  <style>
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+    
+    body {
+			background-color: black;
+			color: white;
+		}
+		a {
+			text-decoration: inherit;
+			color: white;
+		}
+
+    .center{
+      text-align: center;
+    }
+
+    .input-form{
+      background-color: transparent;
+      border: none;
+      border-bottom: 1px solid #FFF;
+      color: #FFF;
+    }
+
+    .h1{font-weight: 700;font-size: 40px;}
+
+    .button-dj{
+      background-color: #9e0000;
+      border: none;
+      border-radius: 50px;
+      padding: 10px 20px;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    #messaggioConferma {
+      display: none;
+      background-color: #e6f7ff;
+      border: 1px solid #bbe1fa;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    /*popup*/
+    .modal-content{
+      background-color: #515151;
+    }
+    .modal-footer{
+      border-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container pt-5">
+    <div class="row">
+      <div class="col-lg-12 center">
+        <h1 class="h1">Richiesta Musicale</h1>
+      </div>
+    </div>
+  </div>
+
+  <div class="container py-5">
+    <div class="row">
+      <div class="col-lg-12">
+        <label for="songInput">Nome canzone:</label><br>
+        <input type="text" id="songInput" class="w-100 input-form pt-3">
+      </div>
+
+      <!--VIDEO YOUTUBE-->
+      <div class="col-lg-12">
+        <div class="page w-100" style="margin-top: 3vh;margin-bottom: 1vh;">
+	        <label class="field field_v1 w-100">
+            <span class="field__label-wrap">
+	            <span class="field__label">Oppure incolla qui l'url da youtube</span>
+	          </span><br>
+	          <input class="field__input w-100 input-form pt-3" type="text" name="SearchVID" id="SearchVID" onkeyup="main()" default="zwjBwiyFIp0">
+	        </label>
+	      </div>
+      </div> 
+
+      <div class="col-lg-12">
+	      <a id="loadlink" class="w-100 d-none" target="_blank">
+	        <img id="vImg" class="w-100">
+	      </a>
+	    </div>
+      
+      <div class="col-lg-12 py-3" id="videosearch">
+		    <iframe id="frame" width="560" class="w-100" height="315" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+		      <div style="margin-top:3vh;">
+			      <!-- <img id="views">
+			      <img id="likes">
+			      <img id="comments"> -->
+		      </div>
+	    </div>
+      <!--VIDEO YOUTUBE-->
+      
+      <div class="col-lg-12 py-3">
+        <label for="nameInput">Il tuo nome:</label><br>
+        <input type="text" id="nameInput" class="w-100 input-form pt-3">
+      </div>
+
+      <div class="col-lg-12 py-3">
+        <label for="nameInput">La dedichi a qualcuno?</label><br>
+        <input type="text" id="dedidaInput" class="w-100 input-form pt-3">
+      </div>
+
+      <div class="col-lg-12 py-5">
+        <button onclick="inviaRichiesta()" class="button-dj">Invia richiesta al DJ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--POPUP-->
+<div class="modal fade" id="messaggioConfermaModal" tabindex="-1" role="dialog" aria-labelledby="messaggioConfermaModalLabel aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        La tua richiesta è stata inviata con successo al DJ!
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="button-dj" data-bs-dismiss="modal">Chiudi</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+  
+    function inviaRichiesta() {
+      const canzone = document.getElementById('songInput').value.trim();
+      const nome = document.getElementById('nameInput').value.trim();
+      const youtube = document.getElementById('SearchVID').value.trim();
+      const dedica = document.getElementById('dedidaInput').value.trim();
+  
+      if (canzone === '' && nome === '') {
+        alert('Compila almeno uno tra "Nome della canzone" e "Nome utente".');
+        return;
+      }
+  
+      socket.emit('nuovaRichiesta', { canzone, youtube, nome, dedica });
+  
+      // Visualizzazione del modal di conferma
+      const messaggioConfermaModal = new bootstrap.Modal(document.getElementById('messaggioConfermaModal'));
+      messaggioConfermaModal.show();
+  
+      // Svuotamento dei campi (se necessario)
+      document.getElementById('songInput').value = '';
+      document.getElementById('nameInput').value = '';
+      document.getElementById('SearchVID').value = '';
+      document.getElementById('dedidaInput').value = '';
+    }
+  </script>
+  
+
+<!--Youtube script video-->
+<script>
+  var val = ""
+  document.getElementById("SearchVID").value = val
+  document.getElementById("frame").src = "https://www.youtube.com/embed/" + val
+  document.getElementById("loadlink").href = "https://youtu.be/" + val
+  document.getElementById("vImg").src ="https://img.youtube.com/vi/" + val + "/maxresdefault.jpg"
+  document.getElementById("views").src = "https://img.shields.io/youtube/views/" + val + "?style=for-the-badge&logo=youtube&label=VIEWS"
+  document.getElementById("comments").src = "https://img.shields.io/youtube/comments/" + val + "?style=for-the-badge&logo=youtube&label=COMMENTS"
+  document.getElementById("likes").src = "https://img.shields.io/youtube/likes/" + val + "?style=for-the-badge&logo=youtube&label=LIKES"
+  
+  function main() {
+    var val = document.getElementById('SearchVID').value
+    val = val.replace("https://www.youtube.com/watch?v=","").replace("https://youtu.be/","")
+    document.getElementById("frame").src = "https://www.youtube.com/embed/" + val
+    document.getElementById("loadlink").href = "https://youtu.be/" + val
+    document.getElementById("vImg").src = "https://img.youtube.com/vi/" + val + "/maxresdefault.jpg"
+    document.getElementById("views").src = "https://img.shields.io/youtube/views/" + val + "?style=for-the-badge&logo=youtube&label=VIEWS"
+    document.getElementById("comments").src = "https://img.shields.io/youtube/comments/" + val + "?style=for-the-badge&logo=youtube&label=COMMENTS"
+    document.getElementById("likes").src = "https://img.shields.io/youtube/likes/" + val + "?style=for-the-badge&logo=youtube&label=LIKES"
+  }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

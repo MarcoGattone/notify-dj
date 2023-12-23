@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard DJ - Richieste Utenti</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+
+<style>
+  .button-dj{
+      background-color: #9e0000;
+      border: none;
+      border-radius: 50px;
+      padding: 10px 20px;
+      color: #fff;
+      font-weight: 700;
+    }
+</style>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <h2>Richieste Memorizzate</h2>
+        <ul id="richiesteMemorizzateList"></ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    socket.on('connect', () => {
+      console.log('Connessione al server stabilita.');
+      caricaRichieste();
+    });
+
+    socket.on('aggiornaRichieste', (richieste) => {
+      console.log('Aggiornamento richieste ricevuto:', richieste);
+
+      if (Array.isArray(richieste)) {
+        const richiesteMemorizzateList = document.getElementById('richiesteMemorizzateList');
+        richiesteMemorizzateList.innerHTML = '';
+
+        richieste.forEach((richiesta, index) => {
+          const listItem = document.createElement('li');
+          listItem.textContent = `Richiesta: ${richiesta.canzone} - Utente: ${richiesta.nome} - YouTube: ${richiesta.youtube} - Dedica: ${richiesta.dedica}`;
+
+          const deleteButton = document.createElement('button');
+          deleteButton.textContent = 'Elimina';
+          deleteButton.className = 'btn btn-danger';
+          deleteButton.onclick = function() {
+            eliminaRichiesta(index);
+          };
+
+          listItem.appendChild(deleteButton);
+          richiesteMemorizzateList.appendChild(listItem);
+        });
+      } else {
+        console.error('Dati delle richieste non validi:', richieste);
+      }
+    });
+
+    function inviaRichiesta() {
+      const data = { canzone: 'Titolo', nome: 'Utente', youtube: 'URL', dedica: 'Qualcuno' };
+      socket.emit('nuovaRichiesta', data);
+    }
+
+    function eliminaRichiesta(index) {
+      socket.emit('eliminaRichiesta', index);
+    }
+
+    function caricaRichieste() {
+      fetch('/getRichieste')
+        .then(response => response.json())
+        .then(data => {
+          const richiesteMemorizzateList = document.getElementById('richiesteMemorizzateList');
+          richiesteMemorizzateList.innerHTML = '';
+
+          data.forEach((richiesta, index) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `Richiesta: ${richiesta.canzone} - Utente: ${richiesta.nome} - YouTube: ${richiesta.youtube} - Dedica: ${richiesta.dedica}`;
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Elimina';
+            deleteButton.className = 'btn btn-danger';
+            deleteButton.onclick = function() {
+              eliminaRichiesta(index);
+            };
+
+            listItem.appendChild(deleteButton);
+            richiesteMemorizzateList.appendChild(listItem);
+          });
+        })
+        .catch(error => console.error('Errore durante il recupero delle richieste:', error));
+    }
+
+    window.onload = caricaRichieste;
+  </script>
+</body>
+</html>
